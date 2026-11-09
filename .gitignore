@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Gradle & Android build artifacts
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+.gradle/
+build/
+
+# Logs & temp
+*.log
+.DS_Store
+Thumbs.db

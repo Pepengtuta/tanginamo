@@ -1,0 +1,225 @@
+{
+  "customers": [
+    "amid",
+    "Banoy",
+    "dodong",
+    "G",
+    "harold",
+    "michel",
+    "O. gwapo",
+    "ONYOK G.",
+    "Richard"
+  ],
+  "items": [
+    {
+      "name": "coke",
+      "price": 23
+    },
+    {
+      "name": "royal",
+      "price": 23
+    },
+    {
+      "name": "mt dew",
+      "price": 23
+    },
+    {
+      "name": "sprite",
+      "price": 23
+    },
+    {
+      "name": "candy",
+      "price": 5
+    },
+    {
+      "name": "chester",
+      "price": 10
+    },
+    {
+      "name": "mighty green",
+      "price": 10
+    },
+    {
+      "name": "mlbr blue",
+      "price": 11
+    },
+    {
+      "name": "mlbr red",
+      "price": 11
+    },
+    {
+      "name": "winston",
+      "price": 12
+    },
+    {
+      "name": "wafrets",
+      "price": 10
+    },
+    {
+      "name": "presto",
+      "price": 10
+    }
+  ],
+  "entries": [
+    {
+      "id": "1794191616849-80037-0",
+      "price": 23,
+      "name": "G",
+      "items": "royal",
+      "time": 1794191602721,
+      "paid": false
+    },
+    {
+      "id": "1794191631857-922978-0",
+      "price": 10,
+      "name": "G",
+      "items": "chester",
+      "time": 1794191622686,
+      "paid": false
+    },
+    {
+      "id": "1794191660577-243636-0",
+      "price": 10,
+      "name": "Richard",
+      "items": "mighty green",
+      "time": 1794191645134,
+      "paid": false
+    },
+    {
+      "id": "1794191660577-995026-1",
+      "price": 10,
+      "name": "Richard",
+      "items": "mighty green",
+      "time": 1794191645134,
+      "paid": false
+    },
+    {
+      "id": "1794191674384-529615-0",
+      "price": 23,
+      "name": "Richard",
+      "items": "royal",
+      "time": 1794191665498,
+      "paid": false
+    },
+    {
+      "id": "1794191691537-605910-0",
+      "price": 10,
+      "name": "amid",
+      "items": "chester",
+      "time": 1794191683685,
+      "paid": false
+    },
+    {
+      "id": "1794191691537-163166-1",
+      "price": 10,
+      "name": "amid",
+      "items": "chester",
+      "time": 1794191683685,
+      "paid": false
+    },
+    {
+      "id": "1794191704297-673659-0",
+      "price": 10,
+      "name": "harold",
+      "items": "chester",
+      "time": 1794191696714,
+      "paid": false
+    },
+    {
+      "id": "1794191704297-677921-1",
+      "price": 10,
+      "name": "harold",
+      "items": "chester",
+      "time": 1794191696714,
+      "paid": false
+    },
+    {
+      "id": "1794191715905-945641-0",
+      "price": 23,
+      "name": "michel",
+      "items": "royal",
+      "time": 1794191708268,
+      "paid": false
+    },
+    {
+      "id": "1794191732240-599462-0",
+      "price": 10,
+      "name": "michel",
+      "items": "wafrets",
+      "time": 1794191722698,
+      "paid": false
+    },
+    {
+      "id": "1794191732240-46743-1",
+      "price": 10,
+      "name": "michel",
+      "items": "wafrets",
+      "time": 1794191722698,
+      "paid": false
+    },
+    {
+      "id": "1794191732240-144988-2",
+      "price": 10,
+      "name": "michel",
+      "items": "wafrets",
+      "time": 1794191722698,
+      "paid": false
+    },
+    {
+      "id": "1794193686906-912349-0",
+      "price": 10,
+      "name": "ONYOK G.",
+      "items": "presto",
+      "time": 1794193677053,
+      "paid": false
+    },
+    {
+      "id": "1794193697618-674703-0",
+      "price": 23,
+      "name": "ONYOK G.",
+      "items": "mt dew",
+      "time": 1794193689639,
+      "paid": false
+    },
+    {
+      "id": "1794193734434-800464-0",
+      "price": 10,
+      "name": "ONYOK G.",
+      "items": "mighty green",
+      "time": 1794193723837,
+      "paid": false
+    },
+    {
+      "id": "1794193734434-569835-1",
+      "price": 10,
+      "name": "ONYOK G.",
+      "items": "mighty green",
+      "time": 1794193723837,
+      "paid": false
+    },
+    {
+      "id": "1794193734434-399057-2",
+      "price": 10,
+      "name": "ONYOK G.",
+      "items": "mighty green",
+      "time": 1794193723837,
+      "paid": false
+    },
+    {
+      "id": "1794193734434-333888-3",
+      "price": 10,
+      "name": "ONYOK G.",
+      "items": "mighty green",
+      "time": 1794193723837,
+      "paid": false
+    },
+    {
+      "id": "1794193734434-439308-4",
+      "price": 10,
+      "name": "ONYOK G.",
+      "items": "mighty green",
+      "time": 1794193723837,
+      "paid": false
+    }
+  ]
+}

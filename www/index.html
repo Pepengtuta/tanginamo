@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#1f5fa8">
+  <title>Utang List</title>
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+  <style>
+    :root {
+      --paper: #fbf9f1;
+      --ink: #1d2433;
+      --line: #cfd8e6;
+      --margin: #d9534f;
+      --muted: #6b7385;
+      --accent: #1f5fa8;
+    }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 8px 0 12px;
+    }
+
+    h2 {
+      font-size: 1.05rem;
+      margin: 20px 0 6px;
+    }
+
+    /* Keep Bootstrap's box-sizing but override form appearance */
+    input,
+    button,
+    select {
+      font: inherit;
+    }
+
+    /* accent button override */
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-accent:hover,
+    .btn-accent:focus {
+      background: #174f8f;
+      border-color: #174f8f;
+      color: #fff;
+    }
+
+    .btn-plain {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .btn-plain:hover,
+    .btn-plain:focus {
+      background: #f0f0f0;
+      color: var(--ink);
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid #f0b429;
+      outline-offset: 1px;
+    }
+
+    .started {
+      color: var(--muted);
+      font-size: 0.9rem;
+      min-height: 1.4em;
+      margin: 6px 0;
+    }
+
+    /* notebook list */
+    .book {
+      background: repeating-linear-gradient(to bottom, transparent 0, transparent 35px, var(--line) 35px, var(--line) 36px);
+      border-left: 3px solid var(--margin);
+      padding-left: 10px;
+      margin-top: 8px;
+    }
+
+    .entry {
+      min-height: 36px;
+      line-height: 36px;
+      display: flex;
+      gap: 6px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+
+    .entry .text {
+      flex: 1;
+      overflow-wrap: anywhere;
+      line-height: 1.4;
+      padding: 6px 0;
+      min-width: 0;
+    }
+
+    .entry .when {
+      color: var(--muted);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .entry.paid .text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .entry button {
+      padding: 2px 8px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    /* On very small screens, stack the action buttons below the text */
+    @media (max-width: 400px) {
+      .entry {
+        flex-wrap: wrap;
+      }
+
+      .entry .when {
+        width: 100%;
+        line-height: 1.4;
+        padding-bottom: 2px;
+      }
+    }
+
+    .totals {
+      margin-top: 12px;
+      font-size: 1.1rem;
+    }
+
+    .totals .grand {
+      font-weight: bold;
+      border-top: 2px solid var(--ink);
+      margin-top: 6px;
+      padding-top: 6px;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 8px 0;
+    }
+
+    /* details panels */
+    details {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 10px;
+      background: #fff;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .small-list {
+      margin: 8px 0;
+    }
+
+    .small-list div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+      gap: 4px;
+    }
+
+    .small-list span {
+      flex: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .filter {
+      margin-top: 12px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    /* Safe area insets for phones with notches (Capacitor) */
+    @supports (padding: env(safe-area-inset-bottom)) {
+      main {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+      }
+    }
+
+    /* push content below the sticky navbar */
+    main {
+      padding-top: 0.5rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar sticky-top" style="background:var(--accent);">
+    <div class="container-sm d-flex align-items-center justify-content-between px-3">
+      <span class="navbar-brand mb-0 text-white fw-bold" style="font-family:Georgia,serif;">Utangina mo</span>
+      <button class="btn p-1" data-bs-toggle="offcanvas" data-bs-target="#menuDrawer" aria-controls="menuDrawer"
+        aria-label="Open menu"
+        style="background:none;border:none;color:#fff;font-size:1.5rem;line-height:1;">&#9776;</button>
+    </div>
+  </nav>
+
+  <!-- Offcanvas drawer (right side) -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="menuDrawer" aria-labelledby="menuDrawerLabel"
+    style="max-width:320px;">
+    <div class="offcanvas-header" style="background:var(--accent);color:#fff;">
+      <h5 class="offcanvas-title" id="menuDrawerLabel" style="font-family:Georgia,serif;">Settings</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body" style="background:var(--paper);">
+
+      <!-- Customers -->
+      <h6 class="fw-bold mb-1">Customers</h6>
+      <div class="small-list mb-2" id="customerBox"></div>
+      <div class="row g-2 mb-3">
+        <div class="col-8">
+          <input id="newCustomer" class="form-control form-control-sm" type="text" placeholder="New customer name">
+        </div>
+        <div class="col-4">
+          <button id="addCustomerBtn" class="btn btn-accent btn-sm w-100">Add</button>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Items and prices -->
+      <h6 class="fw-bold mb-1">Items &amp; Prices</h6>
+      <div class="small-list mb-2" id="itemBox"></div>
+      <div class="row g-2 mb-1">
+        <div class="col-5">
+          <input id="newItem" class="form-control form-control-sm" type="text" placeholder="Item (e.g. coke)">
+        </div>
+        <div class="col-4">
+          <input id="newItemPrice" class="form-control form-control-sm" type="number" inputmode="decimal" min="0"
+            step="any" placeholder="₱ Price">
+        </div>
+        <div class="col-3">
+          <button id="addItemBtn" class="btn btn-accent btn-sm w-100">Add</button>
+        </div>
+      </div>
+      <p class="note mb-3">Typing a known item fills the price if empty.</p>
+
+      <hr>
+
+      <!-- Backup -->
+      <h6 class="fw-bold mb-1">Backup</h6>
+      <p class="note">Saved in this browser only. Download a backup often.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <button id="exportBtn" class="btn btn-accent btn-sm">Download backup</button>
+        <button id="importBtn" class="btn btn-plain btn-sm">Load backup</button>
+        <input id="importFile" type="file" accept="*/*" hidden>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="container-sm py-3 px-3">
+
+    <!-- New entry: price, qty, name, items -->
+    <div class="row g-2">
+      <div class="col-4 col-sm-3">
+        <div class="input-group">
+          <span class="input-group-text px-2"
+            style="font-weight:bold;background:#fff;border-color:var(--line);">₱</span>
+          <input id="price" class="form-control px-2" type="number" inputmode="decimal" min="0" step="any"
+            placeholder="0">
+        </div>
+      </div>
+      <div class="col-3 col-sm-2">
+        <div class="input-group">
+          <span class="input-group-text px-1 text-muted"
+            style="background:#fff;border-color:var(--line);font-size:0.85rem;">×</span>
+          <input id="qty" class="form-control px-1 text-center" type="number" inputmode="numeric" min="1" step="1"
+            value="1" placeholder="1">
+        </div>
+      </div>
+      <div class="col-5 col-sm-3">
+        <input id="name" class="form-control" type="text" list="customerList" placeholder="Name" autocomplete="off">
+      </div>
+      <div class="col-12 col-sm-4">
+        <input id="items" class="form-control" type="text" list="itemList" placeholder="Items" autocomplete="off">
+      </div>
+    </div>
+    <datalist id="customerList"></datalist>
+    <datalist id="itemList"></datalist>
+    <div class="d-flex gap-2 mt-2">
+      <button id="addBtn" class="btn btn-accent">Add utang</button>
+      <button id="clearBtn" class="btn btn-plain">Clear</button>
+    </div>
+    <div class="started" id="started"></div>
+
+    <!-- List -->
+    <div class="filter">
+      <label for="filterName">Show:</label>
+      <select id="filterName" class="form-select form-select-sm w-auto"></select>
+      <label class="d-flex align-items-center gap-1 ms-2" style="font-size:0.9rem;color:var(--muted);">
+        <input type="checkbox" id="hidePaid"> Hide paid
+      </label>
+    </div>
+    <div class="book" id="book"></div>
+    <div class="totals" id="totals"></div>
+
+    <!-- Toast notification: top-center so keyboard never hides it -->
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+      style="z-index:1090; margin-top:54px;">
+      <div id="toast" class="toast align-items-center text-bg-success border-0 shadow" role="alert"
+        aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div id="toastBody" class="toast-body fw-bold py-2"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+            aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    var STORAGE_KEY = "utangApp.v1";
+    var data = { customers: [], items: [], entries: [] };
+    var startTime = null; // locked when typing starts
+
+    // ---------- save and load ----------
+    function load() {
+      try {
+        var saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          var parsed = JSON.parse(saved);
+          data.customers = parsed.customers || [];
+          data.items = parsed.items || [];
+          data.entries = parsed.entries || [];
+        }
+      } catch (e) {
+        console.error("Could not load", e);
+      }
+    }
+
+    function save() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        alert("Could not save. Download a backup and check your browser storage settings.");
+      }
+    }
+
+    // ---------- helpers ----------
+    var $ = function (id) { return document.getElementById(id); };
+
+    function showToast(msg) {
+      var toastEl = $("toast");
+      if (!toastEl || typeof bootstrap === "undefined") return;
+      $("toastBody").textContent = msg;
+      var t = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2500 });
+      t.show();
+    }
+
+    function money(n) {
+      return "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function formatTime(ms) {
+      var d = new Date(ms);
+      var h = d.getHours();
+      var ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12;
+      if (h === 0) h = 12;
+      var min = String(d.getMinutes()).padStart(2, "0");
+      return (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear() + " " + h + ":" + min + " " + ampm;
+    }
+
+    function sameName(a, b) {
+      return a.trim().toLowerCase() === b.trim().toLowerCase();
+    }
+
+    function findCustomer(name) {
+      for (var i = 0; i < data.customers.length; i++) {
+        if (sameName(data.customers[i], name)) return data.customers[i];
+      }
+      return null;
+    }
+
+    function findItem(name) {
+      for (var i = 0; i < data.items.length; i++) {
+        if (sameName(data.items[i].name, name)) return data.items[i];
+      }
+      return null;
+    }
+
+    // ---------- the clock locks on the first keystroke ----------
+    function formIsEmpty() {
+      return $("price").value === "" && $("name").value.trim() === "" && $("items").value.trim() === "";
+    }
+
+    function onTyping() {
+      if (formIsEmpty()) {
+        startTime = null;        // everything erased: next typing starts a new time
+      } else if (startTime === null) {
+        startTime = Date.now();  // first keystroke: lock the time
+      }
+      $("started").textContent = startTime ? "Time locked: " + formatTime(startTime) : "";
+    }
+
+    ["price", "qty", "name", "items"].forEach(function (id) {
+      $(id).addEventListener("input", onTyping);
+    });
+
+    // auto-fill price from the item list when price is empty
+    $("items").addEventListener("change", function () {
+      var found = findItem($("items").value);
+      if (found && $("price").value === "") {
+        $("price").value = found.price;
+        onTyping();
+      }
+    });
+
+    // ---------- add entry ----------
+    function addEntry() {
+      var price = parseFloat($("price").value);
+      var qty = parseInt($("qty").value, 10);
+      if (isNaN(qty) || qty < 1) qty = 1;
+      var name = $("name").value.trim();
+      var items = $("items").value.trim();
+
+      if (isNaN(price) || price <= 0) { alert("Enter a price."); $("price").focus(); return; }
+      if (name === "") { alert("Enter a name."); $("name").focus(); return; }
+      if (items === "") { alert("Enter the items."); $("items").focus(); return; }
+
+      // use the saved customer spelling if the name already exists
+      var existing = findCustomer(name);
+      if (existing) {
+        name = existing;
+      } else {
+        data.customers.push(name);
+        data.customers.sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+      }
+
+      var entryTime = startTime || Date.now();
+      for (var i = 0; i < qty; i++) {
+        data.entries.push({
+          id: Date.now() + "-" + Math.floor(Math.random() * 1000000) + "-" + i,
+          price: price,
+          name: name,
+          items: items,
+          time: entryTime,
+          paid: false
+        });
+      }
+
+      save();
+      clearForm();
+      render();
+      var toastMsg = qty > 1
+        ? "Added " + qty + "× " + money(price) + " (" + money(price * qty) + ") for " + name
+        : "Added " + money(price) + " for " + name;
+      showToast(toastMsg);
+      $("price").focus();
+    }
+
+    function clearForm() {
+      $("price").value = "";
+      $("qty").value = "1";
+      $("name").value = "";
+      $("items").value = "";
+      startTime = null;
+      $("started").textContent = "";
+    }
+
+    // ---------- render ----------
+    function render() {
+      // datalists
+      $("customerList").innerHTML = "";
+      data.customers.forEach(function (c) {
+        var o = document.createElement("option"); o.value = c; $("customerList").appendChild(o);
+      });
+      $("itemList").innerHTML = "";
+      data.items.forEach(function (it) {
+        var o = document.createElement("option"); o.value = it.name; $("itemList").appendChild(o);
+      });
+
+      // filter dropdown (keep selection)
+      var current = $("filterName").value || "__all";
+      var sel = $("filterName");
+      sel.innerHTML = "";
+      var all = document.createElement("option");
+      all.value = "__all"; all.textContent = "Everyone";
+      sel.appendChild(all);
+      data.customers.forEach(function (c) {
+        var o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o);
+      });
+      sel.value = current;
+      if (sel.value !== current) sel.value = "__all";
+      var filter = sel.value;
+
+      // entries, newest at the bottom like a notebook
+      var book = $("book");
+      book.innerHTML = "";
+      var hidePaid = $("hidePaid").checked;
+      var shown = data.entries.filter(function (e) {
+        if (filter !== "__all" && e.name !== filter) return false;
+        if (hidePaid && e.paid) return false;
+        return true;
+      });
+
+      if (shown.length === 0) {
+        book.innerHTML = '<div class="empty">No utang yet. Type a price, a name and the items, then press Add utang.</div>';
+      }
+
+      shown.forEach(function (e) {
+        var row = document.createElement("div");
+        row.className = "entry" + (e.paid ? " paid" : "");
+
+        var text = document.createElement("div");
+        text.className = "text";
+        text.textContent = money(e.price) + " " + e.name + " " + e.items;
+
+        var when = document.createElement("div");
+        when.className = "when";
+        when.textContent = formatTime(e.time);
+
+        var payBtn = document.createElement("button");
+        payBtn.className = "btn btn-plain";
+        payBtn.textContent = e.paid ? "Undo" : "Paid";
+        payBtn.onclick = function () { e.paid = !e.paid; save(); render(); };
+
+        var delBtn = document.createElement("button");
+        delBtn.className = "btn btn-plain";
+        delBtn.textContent = "Delete";
+        delBtn.onclick = function () {
+          if (confirm("Delete: " + money(e.price) + " " + e.name + " " + e.items + "?")) {
+            data.entries = data.entries.filter(function (x) { return x.id !== e.id; });
+            save(); render();
+          }
+        };
+
+        row.appendChild(text);
+        row.appendChild(when);
+        row.appendChild(payBtn);
+        row.appendChild(delBtn);
+        book.appendChild(row);
+      });
+
+      // totals: only unpaid entries count
+      var totals = $("totals");
+      totals.innerHTML = "";
+      var perName = {};
+      var grand = 0;
+      shown.forEach(function (e) {
+        if (!e.paid) {
+          perName[e.name] = (perName[e.name] || 0) + e.price;
+          grand += e.price;
+        }
+      });
+
+      if (filter === "__all") {
+        Object.keys(perName).sort().forEach(function (n) {
+          var d = document.createElement("div");
+          d.textContent = money(perName[n]) + " " + n;
+          totals.appendChild(d);
+        });
+      }
+      var g = document.createElement("div");
+      g.className = "grand";
+      g.textContent = money(grand) + " total" + (filter === "__all" ? "" : " (" + filter + ")");
+      totals.appendChild(g);
+
+      renderSmallLists();
+    }
+
+    function renderSmallLists() {
+      var cb = $("customerBox");
+      cb.innerHTML = "";
+      if (data.customers.length === 0) cb.innerHTML = '<div class="note">No customers yet. They are added when you save an entry.</div>';
+      data.customers.forEach(function (c) {
+        var d = document.createElement("div");
+        var s = document.createElement("span"); s.textContent = c;
+        var actions = document.createElement("div");
+        actions.className = "d-flex gap-1";
+
+        var editBtn = document.createElement("button");
+        editBtn.className = "btn btn-plain btn-sm";
+        editBtn.textContent = "Edit";
+        editBtn.onclick = function () {
+          var newName = prompt("Rename customer '" + c + "' to:", c);
+          if (!newName) return;
+          newName = newName.trim();
+          if (newName === "" || newName === c) return;
+
+          var existing = findCustomer(newName);
+          if (existing && !sameName(existing, c)) {
+            alert("A customer named '" + existing + "' already exists.");
+            return;
+          }
+
+          // Update name in customer list
+          var idx = data.customers.indexOf(c);
+          if (idx !== -1) {
+            data.customers[idx] = newName;
+            data.customers.sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+          }
+
+          // Cascade rename to all existing records
+          var count = 0;
+          data.entries.forEach(function (e) {
+            if (sameName(e.name, c)) {
+              e.name = newName;
+              count++;
+            }
+          });
+
+          // Keep filter selected if currently filtered to this customer
+          if ($("filterName").value === c) {
+            $("filterName").value = newName;
+          }
+
+          save();
+          render();
+          showToast("Renamed '" + c + "' to '" + newName + "' (" + count + " records updated)");
+        };
+
+        var removeBtn = document.createElement("button");
+        removeBtn.className = "btn btn-plain btn-sm";
+        removeBtn.textContent = "Remove";
+        removeBtn.onclick = function () {
+          var hasEntries = data.entries.some(function (e) { return e.name === c; });
+          var msg = hasEntries ? c + " has entries. Removing removes the name from the suggestions only. Continue?" : "Remove " + c + "?";
+          if (confirm(msg)) {
+            data.customers = data.customers.filter(function (x) { return x !== c; });
+            save(); render();
+          }
+        };
+
+        actions.appendChild(editBtn);
+        actions.appendChild(removeBtn);
+        d.appendChild(s);
+        d.appendChild(actions);
+        cb.appendChild(d);
+      });
+
+      var ib = $("itemBox");
+      ib.innerHTML = "";
+      if (data.items.length === 0) ib.innerHTML = '<div class="note">No items yet.</div>';
+      data.items.forEach(function (it) {
+        var d = document.createElement("div");
+        var s = document.createElement("span"); s.textContent = it.name + " - " + money(it.price);
+        var actions = document.createElement("div");
+        actions.className = "d-flex gap-1";
+
+        var editBtn = document.createElement("button");
+        editBtn.className = "btn btn-plain btn-sm";
+        editBtn.textContent = "Edit";
+        editBtn.onclick = function () {
+          var newPrice = prompt("New price for '" + it.name + "':", it.price);
+          if (newPrice === null) return;
+          var p = parseFloat(newPrice);
+          if (isNaN(p) || p < 0) { alert("Enter a valid price."); return; }
+          it.price = p;
+          save();
+          render();
+          showToast("Updated " + it.name + " to " + money(p));
+        };
+
+        var removeBtn = document.createElement("button");
+        removeBtn.className = "btn btn-plain btn-sm";
+        removeBtn.textContent = "Remove";
+        removeBtn.onclick = function () {
+          if (confirm("Remove " + it.name + "?")) {
+            data.items = data.items.filter(function (x) { return x !== it; });
+            save(); render();
+          }
+        };
+
+        actions.appendChild(editBtn);
+        actions.appendChild(removeBtn);
+        d.appendChild(s);
+        d.appendChild(actions);
+        ib.appendChild(d);
+      });
+    }
+
+    // ---------- customers and items ----------
+    $("addCustomerBtn").onclick = function () {
+      var n = $("newCustomer").value.trim();
+      if (n === "") return;
+      if (findCustomer(n)) { alert("That name is already on the list."); return; }
+      data.customers.push(n);
+      data.customers.sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+      $("newCustomer").value = "";
+      save(); render();
+    };
+
+    $("addItemBtn").onclick = function () {
+      var n = $("newItem").value.trim();
+      var p = parseFloat($("newItemPrice").value);
+      if (n === "" || isNaN(p) || p < 0) { alert("Enter the item and its price."); return; }
+      var found = findItem(n);
+      if (found) { found.price = p; } else { data.items.push({ name: n, price: p }); }
+      $("newItem").value = "";
+      $("newItemPrice").value = "";
+      save(); render();
+    };
+
+    // ---------- backup ----------
+    $("exportBtn").onclick = function () {
+      var d = new Date();
+      var filename = "utang-backup-" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + ".json";
+      var json = JSON.stringify(data, null, 2);
+
+      // Inside Capacitor's Android WebView, blob download links silently do nothing.
+      // Detect Capacitor and save through the Filesystem plugin, then share the file.
+      var cap = window.Capacitor;
+      if (cap && cap.isNativePlatform && cap.isNativePlatform()
+        && cap.isPluginAvailable && cap.isPluginAvailable("Filesystem")) {
+        var FS = cap.Plugins.Filesystem;
+        var SH = cap.Plugins.Share;
+        FS.writeFile({
+          path: filename,
+          data: json,
+          directory: "CACHE",   // CACHE needs no extra Android permissions
+          encoding: "utf8"
+        }).then(function (result) {
+          if (SH && SH.share) {
+            return SH.share({
+              title: "Utang Backup",
+              url: result.uri,
+              dialogTitle: "Save or share your backup"
+            });
+          }
+        }).catch(function (err) {
+          alert("Could not save backup: " + (err.message || err));
+        });
+        return;
+      }
+
+      // Plain browser fallback: blob download link
+      var blob = new Blob([json], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+
+    $("importBtn").onclick = function () { $("importFile").click(); };
+    $("importFile").onchange = function (ev) {
+      var file = ev.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var parsed = JSON.parse(reader.result);
+          if (!Array.isArray(parsed.entries)) throw new Error("Not a backup file");
+          if (!confirm("This replaces the current list with " + parsed.entries.length + " backup entries. Continue?")) return;
+          data.customers = parsed.customers || [];
+          data.items = parsed.items || [];
+          data.entries = parsed.entries;
+          save();
+          render();
+          showToast("Loaded " + data.entries.length + " entries from backup!");
+          // Close settings drawer so user sees their loaded list immediately
+          var drawerEl = $("menuDrawer");
+          if (drawerEl && typeof bootstrap !== "undefined") {
+            var inst = bootstrap.Offcanvas.getInstance(drawerEl);
+            if (inst) inst.hide();
+          }
+        } catch (e) {
+          alert("That file is not a valid backup.");
+        }
+      };
+      reader.readAsText(file);
+      ev.target.value = "";
+    };
+
+    // ---------- buttons and keys ----------
+    $("addBtn").onclick = addEntry;
+    $("clearBtn").onclick = clearForm;
+    $("filterName").onchange = render;
+    $("hidePaid").onchange = render;
+    ["price", "qty", "name", "items"].forEach(function (id) {
+      $(id).addEventListener("keydown", function (e) { if (e.key === "Enter") addEntry(); });
+    });
+
+    // Ensure keyboard does not obscure focused inputs on Android/mobile
+    ["price", "qty", "name", "items", "newCustomer", "newItem", "newItemPrice"].forEach(function (id) {
+      var el = $(id);
+      if (el) {
+        el.addEventListener("focus", function () {
+          setTimeout(function () {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 300);
+        });
+      }
+    });
+
+    // Portrait orientation lock (if supported by browser/Capacitor WebView)
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock("portrait").catch(function () { });
+      }
+    } catch (e) { }
+
+    load();
+    render();
+  </script>
+</body>
+
+</html>
