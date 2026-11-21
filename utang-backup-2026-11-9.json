@@ -1,13 +1,16 @@
 {
   "customers": [
     "amid",
+    "ARGE",
     "Banoy",
     "dodong",
     "G",
     "harold",
+    "Jerick",
     "michel",
     "O. gwapo",
     "ONYOK G.",
+    "PORMAN",
     "Richard"
   ],
   "items": [
@@ -58,6 +61,10 @@
     {
       "name": "presto",
       "price": 10
+    },
+    {
+      "name": "Nature-s",
+      "price": 15
     }
   ],
   "entries": [
@@ -219,6 +226,62 @@
       "name": "ONYOK G.",
       "items": "mighty green",
       "time": 1794193723837,
+      "paid": false
+    },
+    {
+      "id": "1794195221532-960949-0",
+      "price": 15,
+      "name": "michel",
+      "items": "Nature-s",
+      "time": 1794195181539,
+      "paid": false
+    },
+    {
+      "id": "1794195241683-735968-0",
+      "price": 23,
+      "name": "ARGE",
+      "items": "coke",
+      "time": 1794195235173,
+      "paid": false
+    },
+    {
+      "id": "1794195252955-619610-0",
+      "price": 23,
+      "name": "Jerick",
+      "items": "mt dew",
+      "time": 1794195245897,
+      "paid": false
+    },
+    {
+      "id": "1794195755211-207595-0",
+      "price": 10,
+      "name": "G",
+      "items": "chester",
+      "time": 1794195746585,
+      "paid": false
+    },
+    {
+      "id": "1794195791324-439073-0",
+      "price": 10,
+      "name": "PORMAN",
+      "items": "mighty green",
+      "time": 1794195777465,
+      "paid": false
+    },
+    {
+      "id": "1794195791324-2755-1",
+      "price": 10,
+      "name": "PORMAN",
+      "items": "mighty green",
+      "time": 1794195777465,
+      "paid": false
+    },
+    {
+      "id": "1794195791324-640506-2",
+      "price": 10,
+      "name": "PORMAN",
+      "items": "mighty green",
+      "time": 1794195777465,
       "paid": false
     }
   ]

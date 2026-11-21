@@ -196,16 +196,14 @@
       font-size: 0.85rem;
     }
 
-    /* Safe area insets for phones with notches (Capacitor) */
-    @supports (padding: env(safe-area-inset-bottom)) {
-      main {
-        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-      }
-    }
-
-    /* push content below the sticky navbar */
+    /* Safe area insets for phones with notches and navigation bars (Capacitor) */
     main {
       padding-top: 0.5rem;
+      padding-bottom: calc(3rem + env(safe-area-inset-bottom, 24px));
+    }
+
+    .offcanvas-body {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom, 32px)) !important;
     }
   </style>
 </head>
@@ -230,6 +228,17 @@
       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body" style="background:var(--paper);">
+
+      <!-- Backup at top: safely above bottom Android navigation bar -->
+      <h6 class="fw-bold mb-1">Backup</h6>
+      <p class="note mb-2">Saved in this phone/browser. Download a backup often.</p>
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        <button id="exportBtn" class="btn btn-accent btn-sm">Download backup</button>
+        <button id="importBtn" class="btn btn-plain btn-sm">Load backup</button>
+        <input id="importFile" type="file" accept="*/*" hidden>
+      </div>
+
+      <hr>
 
       <!-- Customers -->
       <h6 class="fw-bold mb-1">Customers</h6>
@@ -262,63 +271,74 @@
       </div>
       <p class="note mb-3">Typing a known item fills the price if empty.</p>
 
-      <hr>
-
-      <!-- Backup -->
-      <h6 class="fw-bold mb-1">Backup</h6>
-      <p class="note">Saved in this browser only. Download a backup often.</p>
-      <div class="d-flex gap-2 flex-wrap">
-        <button id="exportBtn" class="btn btn-accent btn-sm">Download backup</button>
-        <button id="importBtn" class="btn btn-plain btn-sm">Load backup</button>
-        <input id="importFile" type="file" accept="*/*" hidden>
-      </div>
-
     </div>
   </div>
 
   <!-- Main content -->
   <main class="container-sm py-3 px-3">
 
-    <!-- New entry: price, qty, name, items -->
-    <div class="row g-2">
-      <div class="col-4 col-sm-3">
-        <div class="input-group">
-          <span class="input-group-text px-2"
-            style="font-weight:bold;background:#fff;border-color:var(--line);">₱</span>
-          <input id="price" class="form-control px-2" type="number" inputmode="decimal" min="0" step="any"
-            placeholder="0">
-        </div>
-      </div>
-      <div class="col-3 col-sm-2">
-        <div class="input-group">
-          <span class="input-group-text px-1 text-muted"
-            style="background:#fff;border-color:var(--line);font-size:0.85rem;">×</span>
-          <input id="qty" class="form-control px-1 text-center" type="number" inputmode="numeric" min="1" step="1"
-            value="1" placeholder="1">
-        </div>
-      </div>
-      <div class="col-5 col-sm-3">
-        <input id="name" class="form-control" type="text" list="customerList" placeholder="Name" autocomplete="off">
-      </div>
-      <div class="col-12 col-sm-4">
-        <input id="items" class="form-control" type="text" list="itemList" placeholder="Items" autocomplete="off">
+    <!-- New entry basket: Customer name + item rows -->
+    <div class="row g-2 mb-2">
+      <div class="col-12">
+        <input id="name" class="form-control" type="text" list="customerList" placeholder="Customer Name"
+          autocomplete="off">
       </div>
     </div>
+
+    <!-- Items Basket Rows -->
+    <div id="itemRowsContainer">
+      <div class="row g-2 align-items-center item-row mb-2">
+        <div class="col-4 col-sm-3">
+          <div class="input-group">
+            <span class="input-group-text px-2"
+              style="font-weight:bold;background:#fff;border-color:var(--line);">₱</span>
+            <input class="form-control px-2 row-price" type="number" inputmode="decimal" min="0" step="any"
+              placeholder="0">
+          </div>
+        </div>
+        <div class="col-3 col-sm-2">
+          <div class="input-group">
+            <span class="input-group-text px-1 text-muted"
+              style="background:#fff;border-color:var(--line);font-size:0.85rem;">×</span>
+            <input class="form-control px-1 text-center row-qty" type="number" inputmode="numeric" min="1" step="1"
+              value="1" placeholder="1">
+          </div>
+        </div>
+        <div class="col flex-grow-1">
+          <input class="form-control row-items" type="text" list="itemList" placeholder="Item name" autocomplete="off">
+        </div>
+        <div class="col-auto row-del-col" style="display:none;">
+          <button type="button" class="btn btn-plain btn-sm text-danger px-2 row-del-btn" title="Remove row">✕</button>
+        </div>
+      </div>
+    </div>
+
     <datalist id="customerList"></datalist>
     <datalist id="itemList"></datalist>
-    <div class="d-flex gap-2 mt-2">
-      <button id="addBtn" class="btn btn-accent">Add utang</button>
-      <button id="clearBtn" class="btn btn-plain">Clear</button>
+    <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+      <div class="d-flex gap-2 align-items-center">
+        <button id="addBtn" class="btn btn-accent">Add Linti</button>
+        <button id="clearBtn" class="btn btn-plain">Clear</button>
+        <label class="d-flex align-items-center gap-1 ms-1 text-muted" style="font-size:0.85rem;cursor:pointer;"
+          title="Keep item rows on screen after saving">
+          <input type="checkbox" id="keepItems"> Keep items
+        </label>
+      </div>
+      <button id="addRowBtn" type="button" class="btn btn-plain btn-sm">+ Add item</button>
     </div>
     <div class="started" id="started"></div>
 
     <!-- List -->
-    <div class="filter">
-      <label for="filterName">Show:</label>
-      <select id="filterName" class="form-select form-select-sm w-auto"></select>
+    <div class="filter d-flex align-items-center flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-1">
+        <label for="filterName">Show:</label>
+        <select id="filterName" class="form-select form-select-sm w-auto"></select>
+      </div>
       <label class="d-flex align-items-center gap-1 ms-2" style="font-size:0.9rem;color:var(--muted);">
         <input type="checkbox" id="hidePaid"> Hide paid
       </label>
+      <button id="paidBtn" class="btn btn-accent btn-sm ms-2" style="display:none;">Paid</button>
+      <button id="wipeBtn" class="btn btn-outline-danger btn-sm ms-auto" style="display:none;">Wipe</button>
     </div>
     <div class="book" id="book"></div>
     <div class="totals" id="totals"></div>
@@ -343,6 +363,7 @@
     var STORAGE_KEY = "utangApp.v1";
     var data = { customers: [], items: [], entries: [] };
     var startTime = null; // locked when typing starts
+    var showAll = false;
 
     // ---------- save and load ----------
     function load() {
@@ -369,6 +390,20 @@
 
     // ---------- helpers ----------
     var $ = function (id) { return document.getElementById(id); };
+
+    function markAllCustomerPaid(customerName, totalAmount) {
+      if (!confirm("Mark all " + money(totalAmount) + " utang for " + customerName + " as paid?")) return;
+      var count = 0;
+      data.entries.forEach(function (e) {
+        if (sameName(e.name, customerName) && !e.paid) {
+          e.paid = true;
+          count++;
+        }
+      });
+      save();
+      render();
+      showToast("Marked " + count + " entries (" + money(totalAmount) + ") paid for " + customerName);
+    }
 
     function showToast(msg) {
       var toastEl = $("toast");
@@ -412,7 +447,14 @@
 
     // ---------- the clock locks on the first keystroke ----------
     function formIsEmpty() {
-      return $("price").value === "" && $("name").value.trim() === "" && $("items").value.trim() === "";
+      if ($("name").value.trim() !== "") return false;
+      var rows = document.querySelectorAll(".item-row");
+      for (var i = 0; i < rows.length; i++) {
+        var p = rows[i].querySelector(".row-price").value;
+        var it = rows[i].querySelector(".row-items").value.trim();
+        if (p !== "" || it !== "") return false;
+      }
+      return true;
     }
 
     function onTyping() {
@@ -424,32 +466,107 @@
       $("started").textContent = startTime ? "Time locked: " + formatTime(startTime) : "";
     }
 
-    ["price", "qty", "name", "items"].forEach(function (id) {
-      $(id).addEventListener("input", onTyping);
-    });
-
-    // auto-fill price from the item list when price is empty
-    $("items").addEventListener("change", function () {
-      var found = findItem($("items").value);
-      if (found && $("price").value === "") {
-        $("price").value = found.price;
-        onTyping();
+    $("name").addEventListener("input", onTyping);
+    $("name").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        var firstItem = document.querySelector(".row-items");
+        if (firstItem) firstItem.focus();
       }
     });
 
+    function updateDelButtons() {
+      var rows = document.querySelectorAll(".item-row");
+      rows.forEach(function (r) {
+        var delCol = r.querySelector(".row-del-col");
+        if (delCol) delCol.style.display = rows.length > 1 ? "block" : "none";
+      });
+    }
+
+    function wireRowEvents(row) {
+      var priceInp = row.querySelector(".row-price");
+      var qtyInp = row.querySelector(".row-qty");
+      var itemInp = row.querySelector(".row-items");
+      var delBtn = row.querySelector(".row-del-btn");
+
+      [priceInp, qtyInp, itemInp].forEach(function (inp) {
+        inp.addEventListener("input", onTyping);
+        inp.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") addEntry();
+        });
+        inp.addEventListener("focus", function () {
+          setTimeout(function () {
+            inp.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 300);
+        });
+      });
+
+      itemInp.addEventListener("change", function () {
+        var found = findItem(itemInp.value);
+        if (found && priceInp.value === "") {
+          priceInp.value = found.price;
+          onTyping();
+        }
+      });
+
+      if (delBtn) {
+        delBtn.onclick = function () {
+          row.remove();
+          updateDelButtons();
+          onTyping();
+        };
+      }
+    }
+
+    function addRow() {
+      var container = $("itemRowsContainer");
+      var firstRow = container.querySelector(".item-row");
+      var newRow = firstRow.cloneNode(true);
+      newRow.querySelector(".row-price").value = "";
+      newRow.querySelector(".row-qty").value = "1";
+      newRow.querySelector(".row-items").value = "";
+      container.appendChild(newRow);
+      wireRowEvents(newRow);
+      updateDelButtons();
+      newRow.querySelector(".row-items").focus();
+    }
+
+    $("addRowBtn").onclick = addRow;
+
+    // Initial wiring for default row
+    document.querySelectorAll(".item-row").forEach(wireRowEvents);
+
     // ---------- add entry ----------
     function addEntry() {
-      var price = parseFloat($("price").value);
-      var qty = parseInt($("qty").value, 10);
-      if (isNaN(qty) || qty < 1) qty = 1;
       var name = $("name").value.trim();
-      var items = $("items").value.trim();
+      if (name === "") {
+        alert("Enter a customer name.");
+        $("name").focus();
+        return;
+      }
 
-      if (isNaN(price) || price <= 0) { alert("Enter a price."); $("price").focus(); return; }
-      if (name === "") { alert("Enter a name."); $("name").focus(); return; }
-      if (items === "") { alert("Enter the items."); $("items").focus(); return; }
+      var rows = document.querySelectorAll(".item-row");
+      var basket = [];
+      for (var i = 0; i < rows.length; i++) {
+        var p = parseFloat(rows[i].querySelector(".row-price").value);
+        var q = parseInt(rows[i].querySelector(".row-qty").value, 10);
+        if (isNaN(q) || q < 1) q = 1;
+        var it = rows[i].querySelector(".row-items").value.trim();
 
-      // use the saved customer spelling if the name already exists
+        if (isNaN(p) || p <= 0) {
+          alert("Enter a price for item #" + (i + 1) + ".");
+          rows[i].querySelector(".row-price").focus();
+          return;
+        }
+        if (it === "") {
+          alert("Enter the item name for item #" + (i + 1) + ".");
+          rows[i].querySelector(".row-items").focus();
+          return;
+        }
+        basket.push({ price: p, qty: q, items: it });
+      }
+
+      if (basket.length === 0) return;
+
       var existing = findCustomer(name);
       if (existing) {
         name = existing;
@@ -459,32 +576,54 @@
       }
 
       var entryTime = startTime || Date.now();
-      for (var i = 0; i < qty; i++) {
-        data.entries.push({
-          id: Date.now() + "-" + Math.floor(Math.random() * 1000000) + "-" + i,
-          price: price,
-          name: name,
-          items: items,
-          time: entryTime,
-          paid: false
-        });
-      }
+      var totalBasketAmount = 0;
+      var totalItemsCount = 0;
 
+      basket.forEach(function (item, rowIdx) {
+        for (var q = 0; q < item.qty; q++) {
+          data.entries.push({
+            id: Date.now() + "-" + Math.floor(Math.random() * 1000000) + "-" + rowIdx + "-" + q,
+            price: item.price,
+            name: name,
+            items: item.items,
+            time: entryTime,
+            paid: false
+          });
+          totalBasketAmount += item.price;
+          totalItemsCount++;
+        }
+      });
+
+      var keep = $("keepItems") && $("keepItems").checked;
       save();
-      clearForm();
+      clearForm(keep);
       render();
-      var toastMsg = qty > 1
-        ? "Added " + qty + "× " + money(price) + " (" + money(price * qty) + ") for " + name
-        : "Added " + money(price) + " for " + name;
+
+      var toastMsg = basket.length > 1
+        ? "Added " + basket.length + " items (" + totalItemsCount + " pcs, " + money(totalBasketAmount) + ") for " + name
+        : (basket[0].qty > 1
+          ? "Added " + basket[0].qty + "× " + money(basket[0].price) + " (" + money(totalBasketAmount) + ") for " + name
+          : "Added " + money(totalBasketAmount) + " for " + name);
+
       showToast(toastMsg);
-      $("price").focus();
+      $("name").focus();
     }
 
-    function clearForm() {
-      $("price").value = "";
-      $("qty").value = "1";
+    function clearForm(keepBasket) {
       $("name").value = "";
-      $("items").value = "";
+      if (!keepBasket) {
+        var container = $("itemRowsContainer");
+        var rows = container.querySelectorAll(".item-row");
+        for (var i = 1; i < rows.length; i++) {
+          rows[i].remove();
+        }
+        if (rows[0]) {
+          rows[0].querySelector(".row-price").value = "";
+          rows[0].querySelector(".row-qty").value = "1";
+          rows[0].querySelector(".row-items").value = "";
+        }
+        updateDelButtons();
+      }
       startTime = null;
       $("started").textContent = "";
     }
@@ -529,7 +668,9 @@
         book.innerHTML = '<div class="empty">No utang yet. Type a price, a name and the items, then press Add utang.</div>';
       }
 
-      shown.forEach(function (e) {
+      var visible = showAll ? shown : shown.slice(0, 10);
+
+      visible.forEach(function (e) {
         var row = document.createElement("div");
         row.className = "entry" + (e.paid ? " paid" : "");
 
@@ -563,6 +704,22 @@
         book.appendChild(row);
       });
 
+      if (shown.length > 10) {
+        var toggleWrap = document.createElement("div");
+        toggleWrap.className = "text-center my-2";
+        var toggleBtn = document.createElement("button");
+        toggleBtn.className = "btn btn-plain btn-sm w-100";
+        toggleBtn.textContent = showAll
+          ? "▲ Show less (first 10)"
+          : "▼ Show all (" + shown.length + " entries)";
+        toggleBtn.onclick = function () {
+          showAll = !showAll;
+          render();
+        };
+        toggleWrap.appendChild(toggleBtn);
+        book.appendChild(toggleWrap);
+      }
+
       // totals: only unpaid entries count
       var totals = $("totals");
       totals.innerHTML = "";
@@ -586,6 +743,40 @@
       g.className = "grand";
       g.textContent = money(grand) + " total" + (filter === "__all" ? "" : " (" + filter + ")");
       totals.appendChild(g);
+
+      // Top filter "Paid" button for selected customer
+      var paidBtn = $("paidBtn");
+      if (paidBtn) {
+        if (filter !== "__all" && grand > 0) {
+          paidBtn.style.display = "inline-block";
+          paidBtn.onclick = function () {
+            markAllCustomerPaid(filter, grand);
+          };
+        } else {
+          paidBtn.style.display = "none";
+        }
+      }
+
+      // Top filter "Wipe" button at the very end
+      var wipeBtn = $("wipeBtn");
+      if (wipeBtn) {
+        var customerEntryCount = 0;
+        if (filter !== "__all") {
+          customerEntryCount = data.entries.filter(function (e) { return sameName(e.name, filter); }).length;
+        }
+        if (filter !== "__all" && customerEntryCount > 0) {
+          wipeBtn.style.display = "inline-block";
+          wipeBtn.onclick = function () {
+            if (!confirm("Permanently wipe/delete all " + customerEntryCount + " records for " + filter + "? This cannot be undone.")) return;
+            data.entries = data.entries.filter(function (e) { return !sameName(e.name, filter); });
+            save();
+            render();
+            showToast("Wiped all records for " + filter);
+          };
+        } else {
+          wipeBtn.style.display = "none";
+        }
+      }
 
       renderSmallLists();
     }
@@ -797,15 +988,15 @@
 
     // ---------- buttons and keys ----------
     $("addBtn").onclick = addEntry;
-    $("clearBtn").onclick = clearForm;
-    $("filterName").onchange = render;
-    $("hidePaid").onchange = render;
-    ["price", "qty", "name", "items"].forEach(function (id) {
-      $(id).addEventListener("keydown", function (e) { if (e.key === "Enter") addEntry(); });
-    });
+    $("clearBtn").onclick = function () {
+      if ($("keepItems")) $("keepItems").checked = false;
+      clearForm(false);
+    };
+    $("filterName").onchange = function () { showAll = false; render(); };
+    $("hidePaid").onchange = function () { showAll = false; render(); };
 
     // Ensure keyboard does not obscure focused inputs on Android/mobile
-    ["price", "qty", "name", "items", "newCustomer", "newItem", "newItemPrice"].forEach(function (id) {
+    ["name", "newCustomer", "newItem", "newItemPrice"].forEach(function (id) {
       var el = $(id);
       if (el) {
         el.addEventListener("focus", function () {

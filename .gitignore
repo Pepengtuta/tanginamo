@@ -11,5 +11,7 @@ build/
 
 # Logs & temp
 *.log
+*.apk
 .DS_Store
 Thumbs.db
+
